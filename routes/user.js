@@ -8,5 +8,6 @@ const api = express.Router();
 api.get('/home', UserController.home);
 api.get('/tests', UserController.tests);
 api.post('/register', UserController.saveUser);
+api.post('/login', UserController.loginUser);
 
 module.exports = api;

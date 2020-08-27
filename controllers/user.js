@@ -2,6 +2,8 @@
 
 const bcrypt = require('bcrypt-nodejs');
 const User = require('../models/user');
+const jwt = require('../services/jwt');
+
 
 function home(req, res){
     res.status(200).send({
@@ -66,8 +68,43 @@ function saveUser(req, res){
     }   
 }
 
+function loginUser(req, res){
+    const params = req.body;
+    const email = params.email;
+    const password = params.password;
+
+    User.findOne({email: email}, (err, user) =>{
+        if(err) return res.status(500).send({message: 'Error in the request'});
+
+        if(user){
+            bcrypt.compare(password, user.password, (err, check)=>{
+                if(check){
+                    //Return user data
+                    if(params.getToken){
+                        // Generate and return token
+                        return res.status(200).send({
+                            token: jwt.createToken(user)
+                        });
+                    }else{
+                        //Return user data
+                        user.password = undefined;
+                        return res.status(200).send({user});
+                    }
+                 
+                }else{
+                    return res.status(404).send({message: "User couldn't be identified"});
+                }
+            });
+        }
+        else{
+            return res.status(404).send({message: "User could't be identified!"});
+        }
+    });
+}
+
 module.exports = {
     home, 
     tests, 
-    saveUser
+    saveUser, 
+    loginUser
 }
